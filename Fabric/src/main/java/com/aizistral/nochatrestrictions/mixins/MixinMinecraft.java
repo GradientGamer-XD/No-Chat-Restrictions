@@ -16,7 +16,8 @@ import net.minecraft.client.main.GameConfig;
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 
-    @Inject(method = { "m_193585_", "createUserApiService" }, at = @At("RETURN"), cancellable = true)
+    //Removed unmapped method as it's throwing an error
+    @Inject(method = "createUserApiService", at = @At("RETURN"), cancellable = true)
     public void onCreateUserApi(YggdrasilAuthenticationService authService, GameConfig gameConfig,
 	    CallbackInfoReturnable<UserApiService> info) {
 	UserApiService returnedService = info.getReturnValue();
