@@ -12,7 +12,7 @@ buildscript {
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
     id "com.modrinth.minotaur" version "2.+"
     id "com.matthewprenger.cursegradle" version "1.4.0"
 }
@@ -27,7 +27,7 @@ version = project.modVersion
 group = 'com.aizistral.nochatrestrictions'
 archivesBaseName = 'NoChatRestrictions'
 
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
+// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 tasks.withType(JavaCompile).configureEach {
@@ -45,7 +45,7 @@ minecraft {
         client {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 			arg "-mixin.config=nochatrestrictions.mixins.json"
 
             mods {
@@ -58,7 +58,7 @@ minecraft {
         server {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 			arg "-mixin.config=nochatrestrictions.mixins.json"
 
             mods {
@@ -115,7 +115,18 @@ curseforge {
         changelogType = 'markdown'
         changelog = file('../CHANGELOG.md')
 		
+		addGameVersion '1.21.11'
+		addGameVersion '1.21.10'
+		addGameVersion '1.21.9'
+		addGameVersion '1.21.8'
+		addGameVersion '1.21.7'
+		addGameVersion '1.21.6'
+		addGameVersion '1.21.5'
+		addGameVersion '1.21.4'
+		addGameVersion '1.21.3'
+		addGameVersion '1.21.2'
 		addGameVersion '1.21.1'
+		addGameVersion '1.21'
 		addGameVersion 'Forge'
 		addGameVersion 'Java 21'
     }
@@ -129,7 +140,20 @@ modrinth {
     versionType = "release"
 	changelog = rootProject.file("../CHANGELOG.md").text
     uploadFile = jar
-    gameVersions = [ '1.21.1' ]
+    gameVersions = [
+		'1.21.11', 
+		'1.21.10',
+		'1.21.9',
+		'1.21.8',
+		'1.21.7',
+		'1.21.6',
+		'1.21.5',
+		'1.21.4',
+		'1.21.3',
+		'1.21.2',
+		'1.21.1',
+		'1.21'
+	]
 	loaders = [ 'forge' ]
 }
 

@@ -13,10 +13,10 @@ import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
 
-@Mixin(value = Minecraft.class, remap = false)
+@Mixin(Minecraft.class)
 public class MixinMinecraft {
-    //Removed unmapped method as it's throwing an error
-    @Inject(method = "createUserApiService", at = @At("RETURN"), cancellable = true)
+
+    @Inject(method = { "m_193585_", "createUserApiService" }, at = @At("RETURN"), cancellable = true)
     public void onCreateUserApi(YggdrasilAuthenticationService authService, GameConfig gameConfig,
 	    CallbackInfoReturnable<UserApiService> info) {
 	UserApiService returnedService = info.getReturnValue();

@@ -1,0 +1,145 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.1.20'
+    id "com.modrinth.minotaur" version "2.+"
+    id "com.matthewprenger.cursegradle" version "1.4.0"
+}
+
+version = project.mod_version
+group = 'com.aizistral.nochatrestrictions'
+
+repositories {
+    mavenLocal()
+}
+
+base {
+    archivesName = 'NoChatRestrictions'
+}
+
+// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+runs {
+
+    configureEach {
+        // Recommended logging data for a userdev environment
+        // The markers can be added/remove as needed separated by commas.
+        // "SCAN": For mods scan.
+        // "REGISTRIES": For firing of registry events.
+        // "REGISTRYDUMP": For getting the contents of all registries.
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'mixin.env.disableRefMap', 'true'
+
+        // Recommended logging level for the console
+        // You can set various levels here.
+        // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+        systemProperty 'forge.logging.console.level', 'info'
+
+        modSource project.sourceSets.main
+    }
+
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', 'nochatrestrictions'
+    }
+
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', 'nochatrestrictions'
+        programArgument '--nogui'
+    }
+	
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+        mod_version: manifest_version
+    ]
+	
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "NoChatRestrictions",
+            "Specification-Vendor": "Aizistral",
+            "Specification-Version": project.manifest_version,
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.manifest_version,
+            "Implementation-Vendor" :"NoChatRestrictions",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+curseforge {
+
+    project {
+        apiKey = findProperty('curseKey') ?: '0'
+        
+		id = '1442925'
+        releaseType = 'release'
+        changelogType = 'markdown'
+        changelog = file('../CHANGELOG.md')
+		
+		addGameVersion '1.21.11'
+		addGameVersion '1.21.10'
+		addGameVersion '1.21.9'
+		addGameVersion '1.21.8'
+		addGameVersion '1.21.7'
+		addGameVersion '1.21.6'
+		addGameVersion '1.21.5'
+		addGameVersion '1.21.4'
+		addGameVersion '1.21.3'
+		addGameVersion '1.21.2'
+		addGameVersion '1.21.1'
+		addGameVersion '1.21'
+		addGameVersion 'NeoForge'
+		addGameVersion 'Java 21'
+    }
+	
+}
+
+modrinth {
+    token = findProperty('modrinthKey') ?: '0'
+    projectId = "z440MEwJ"
+    versionNumber = project.version
+	versionName = "No Chat Restrictions " + project.version
+    versionType = "release"
+	changelog = rootProject.file("../CHANGELOG.md").text
+    uploadFile = jar
+    gameVersions = [
+		'1.21.11', 
+		'1.21.10',
+		'1.21.9',
+		'1.21.8',
+		'1.21.7',
+		'1.21.6',
+		'1.21.5',
+		'1.21.4',
+		'1.21.3',
+		'1.21.2',
+		'1.21.1',
+		'1.21'
+	]
+	loaders = [ 'neoforge' ]
+}
+
+task upload {
+	dependsOn('modrinth')
+	dependsOn('curseforge')
+}
