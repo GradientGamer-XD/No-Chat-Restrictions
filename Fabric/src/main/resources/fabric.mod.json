@@ -1,32 +1,35 @@
 {
-	"schemaVersion": 1,
-	"id": "nochatrestrictions",
-	"version": "${version}",
-	"name": "No Chat Restrictions",
-	"description": "A mod dedicated to removing restrictions around the use of multiplayer features, including in-game chat.",
-    "icon": "assets/nochatrestrictions/textures/misc/ncr_logo.png",
-	"authors": [
-		"Aizistral"
-	],
-	"contact": {
-		"homepage": "https://modrinth.com/project/no-chat-restrictions",
-		"sources": "https://github.com/Aizistral-Studios/No-Chat-Restrictions",
-		"issues": "https://github.com/Aizistral-Studios/No-Chat-Restrictions/issues"
-	},
-	"license": "WTFPL",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"com.aizistral.nochatrestrictions.NoChatRestrictions"
-		]
-	},
-	"mixins": [
-		"nochatrestrictions.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.16",
-		"minecraft": ">=1.21 <=1.21.11",
-		"java": ">=21",
-		"fabric": "*"
-	}
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "${license}",
+  "icon": "${mod_id}.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.aizistral.nochatrestrictions.NoChatRestrictions"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json",
+    "${mod_id}.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
 }

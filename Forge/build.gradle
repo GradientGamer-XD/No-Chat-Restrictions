@@ -1,68 +1,62 @@
-buildscript {
-    repositories {
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        maven { url "https://plugins.gradle.org/m2/" }
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-    }
-}
-
 plugins {
-    id 'eclipse'
-    id 'idea'
+    id 'multiloader-loader'
     id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
-    id "com.modrinth.minotaur" version "2.+"
-    id "com.matthewprenger.cursegradle" version "1.4.0"
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
-
-apply plugin: 'org.spongepowered.mixin'
-
+base {
+    archivesName = "${mod_name}-forge-${minecraft_version}"
+}
 mixin {
-    add sourceSets.main, "nochatrestrictions.refmap.json"
+    config("${mod_id}.mixins.json")
+    config("${mod_id}.forge.mixins.json")
 }
-
-version = project.modVersion
-group = 'com.aizistral.nochatrestrictions'
-archivesBaseName = 'NoChatRestrictions'
-
-// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-}
-
-println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    mappings channel: 'official', version: minecraft_version
+
+    copyIdeResources = true //Calls processResources when in dev
+
+    reobf = false // Forge 1.20.6+ uses official mappings at runtime, so we shouldn't reobf from official to SRG
+
+    // Automatically enable forge AccessTransformers if the file exists
+    // This location is hardcoded in Forge and can not be changed.
+    // https://github.com/MinecraftForge/MinecraftForge/blob/be1698bb1554f9c8fa2f58e32b9ab70bc4385e60/fmlloader/src/main/java/net/minecraftforge/fml/loading/moddiscovery/ModFile.java#L123
+    // Forge still uses SRG names during compile time, so we cannot use the common AT's
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformer = at
+    }
 
     runs {
         client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'info'
-			arg "-mixin.config=nochatrestrictions.mixins.json"
-
+            workingDirectory file('runs/client')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Client'
             mods {
-                nochatrestrictions {
+                modClientRun {
                     source sourceSets.main
                 }
             }
         }
 
         server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'info'
-			arg "-mixin.config=nochatrestrictions.mixins.json"
-
+            workingDirectory file('runs/server')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            taskName 'Server'
             mods {
-                nochatrestrictions {
+                modServerRun {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory file('runs/data')
+            ideaModule "${rootProject.name}.${project.name}.main"
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            taskName 'Data'
+            mods {
+                modDataRun {
                     source sourceSets.main
                 }
             }
@@ -70,94 +64,26 @@ minecraft {
     }
 }
 
-repositories {
-	maven {  url = "https://repo.spongepowered.org/maven" }
-    mavenCentral()
-	jcenter()
-}
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
-    annotationProcessor 'com.google.code.gson:gson:2.8.0'
-    annotationProcessor 'com.google.guava:guava:21.0'
-    annotationProcessor 'org.ow2.asm:asm-tree:7.2'
-    annotationProcessor 'org.ow2.asm:asm-commons:7.2'
-    annotationProcessor 'org.ow2.asm:asm-util:7.2'
+    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
+
+    // Forge's hack fix
+    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
-jar {
-    manifest {
-        attributes([
-            "Specification-Title": "NoChatRestrictions",
-            "Specification-Vendor": "Aizistral",
-            "Specification-Version": project.manifestVersion,
-            "Implementation-Title": project.name,
-            "Implementation-Version": project.manifestVersion,
-            "Implementation-Vendor" :"NoChatRestrictions",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-			"TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
-            "TweakOrder": 0,
-            "MixinConfigs" : "nochatrestrictions.mixins.json"
-        ])
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            fg.component(it)
+        }
     }
 }
 
-jar.finalizedBy('reobfJar')
-
-curseforge {
-
-    project {
-        apiKey = findProperty('curseKey') ?: '0'
-        
-		id = '1442925'
-        releaseType = 'release'
-        changelogType = 'markdown'
-        changelog = file('../CHANGELOG.md')
-		
-		addGameVersion '1.21.11'
-		addGameVersion '1.21.10'
-		addGameVersion '1.21.9'
-		addGameVersion '1.21.8'
-		addGameVersion '1.21.7'
-		addGameVersion '1.21.6'
-		addGameVersion '1.21.5'
-		addGameVersion '1.21.4'
-		addGameVersion '1.21.3'
-		addGameVersion '1.21.2'
-		addGameVersion '1.21.1'
-		addGameVersion '1.21'
-		addGameVersion 'Forge'
-		addGameVersion 'Java 21'
-    }
-}
-
-modrinth {
-    token = findProperty('modrinthKey') ?: '0'
-    projectId = "z440MEwJ"
-    versionNumber = project.version
-	versionName = "No Chat Restrictions " + project.version
-    versionType = "release"
-	changelog = rootProject.file("../CHANGELOG.md").text
-    uploadFile = jar
-    gameVersions = [
-		'1.21.11', 
-		'1.21.10',
-		'1.21.9',
-		'1.21.8',
-		'1.21.7',
-		'1.21.6',
-		'1.21.5',
-		'1.21.4',
-		'1.21.3',
-		'1.21.2',
-		'1.21.1',
-		'1.21'
-	]
-	loaders = [ 'forge' ]
-}
-
-task upload {
-	dependsOn('modrinth')
-	dependsOn('curseforge')
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
 }

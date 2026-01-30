@@ -1,14 +1,18 @@
 package com.aizistral.nochatrestrictions;
 
-import com.aizistral.nochatrestrictions.core.NCRCore;
-
 import net.fabricmc.api.ModInitializer;
 
 public class NoChatRestrictions implements ModInitializer {
 
     @Override
     public void onInitialize() {
-	NCRCore.LOGGER.info("NoChatRestrictions Fabric mod initialized!");
-    }
 
+        // This method is invoked by the Fabric mod loader when it is ready
+        // to load your mod. You can access Fabric and Common code in this
+        // project.
+
+        // Use Fabric to bootstrap the Common mod.
+        Constants.LOG.info("Hello Fabric world!");
+        CommonClass.init();
+    }
 }
